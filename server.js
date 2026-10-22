@@ -46,6 +46,12 @@ const SMTP_PASS = process.env.SMTP_PASS || "";
 const SENDER_EMAIL = process.env.SENDER_EMAIL || SMTP_USER;
 const SENDER_NAME = process.env.SENDER_NAME || "DriveCover";
 const COVER_LEVEL = process.env.COVER_LEVEL || "Comprehensive";
+const PAY_LINKS = {
+  "1h": process.env.PAY_LINK_1H || "",
+  "1d": process.env.PAY_LINK_1D || "",
+  "1w": process.env.PAY_LINK_1W || "",
+  "custom": process.env.PAY_LINK_CUSTOM || "",
+};
 const EXCESS = process.env.EXCESS || "£250";
 const smtpConfigured = !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
 const hasEmail = smtpConfigured && !!nodemailer;
@@ -57,6 +63,9 @@ if (hasEmail) {
     port: SMTP_PORT,
     secure: SMTP_PORT === 465, // 465 = SSL, 587 = STARTTLS
     auth: { user: SMTP_USER, pass: SMTP_PASS },
+    connectionTimeout: 15000,  // nu mai astepta la nesfarsit
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
 }
 
@@ -220,6 +229,7 @@ function buildCertificatePdf(d, pn){
 
 async function sendPolicyEmail(to, d){
   const pn = policyNumber();
+  console.log("Trimit polita catre", to, "prin", SMTP_HOST);
   const now = new Date();
   const until = addCover(now, d.coverCode);
   const photo = dataUrlToBuffer(d.photo);
@@ -244,6 +254,7 @@ async function sendPolicyEmail(to, d){
     html: policyHtml(dd, pn),
     attachments,
   });
+  console.log("Polita trimisa OK:", pn);
   return pn;
 }
 
@@ -393,6 +404,11 @@ const server = http.createServer(async (req, res) => {
     saveApifyToken(token);
     console.log("Token Apify salvat. MOT: activ (prin Apify)");
     return res.end(JSON.stringify({ ok: true }));
+  }
+
+  if (url.pathname === "/api/paylinks") {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    return res.end(JSON.stringify(PAY_LINKS));
   }
 
   if (url.pathname === "/api/policy" && req.method === "POST") {
