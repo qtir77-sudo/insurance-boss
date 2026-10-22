@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get a quote – Cover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f7f5;
+    --ink:#0b1714;
+    --muted:#5f6b67;
+    --faint:#c9cfcd;
+    --line:#e3e6e4;
+    --green:#08443a;
+    --green-2:#0d5547;
+    --card:#ffffff;
+    --red:#c8282d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg)}
+  body{
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{
+    width:100%;
+    max-width:643px;
+    margin:0 auto;
+    padding:40px 0 80px;
+  }
+
+  /* breadcrumb */
+  .crumbs{display:flex;align-items:center;gap:8px}
+  .crumb{
+    display:inline-flex;align-items:center;
+    height:26px;padding:0 10px;
+    background:#fff;border:1px solid var(--line);
+    border-radius:999px;
+    font-size:9.5px;font-weight:600;color:var(--ink);
+    text-decoration:none;
+  }
+  .crumb-sep{font-size:10px;color:var(--faint)}
+
+  .main{
+    width:377px;
+    margin-left:auto;
+    margin-right:0;
+    padding-top:44px;
+  }
+
+  /* stepper */
+  .stepper{display:flex;align-items:flex-start;margin-bottom:28px}
+  .step{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+  .step .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:#dfe3e1;margin-top:3px;
+  }
+  .step.done .dot{background:var(--green)}
+  .step.current .dot{
+    width:12px;height:12px;margin-top:0;
+    background:var(--green);
+    box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px #cfd6d3;
+  }
+  .step span{font-size:8.5px;font-weight:500;color:#c3cac7;white-space:nowrap}
+  .step.done span{color:var(--ink)}
+  .step.current span{color:var(--ink);font-weight:600}
+  .bar{
+    height:1.5px;width:32px;background:#e3e6e4;
+    margin:5.5px 4px 0;flex:none;
+  }
+  .bar.done{background:var(--green)}
+
+  h1{
+    font-size:37px;line-height:1.02;
+    font-weight:800;letter-spacing:-0.045em;
+    color:var(--ink);
+  }
+  .sub{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  /* discount banner */
+  .promo{
+    margin-top:22px;
+    display:flex;align-items:center;gap:9px;
+    height:39px;padding:0 13px;
+    background:#eaecea;border:1px solid #dde1df;
+    border-radius:10px;
+    font-size:10.5px;color:#3c4744;
+  }
+  .tag{
+    display:inline-flex;align-items:center;
+    height:18px;padding:0 8px;
+    font-size:8.5px;font-weight:700;color:var(--red);
+    background:#fff3f2;border:1px solid #f2b9b6;
+    border-radius:999px;
+  }
+
+  /* options */
+  .options{margin-top:13px;display:flex;flex-direction:column;gap:9px}
+  .opt{
+    position:relative;
+    display:flex;align-items:center;justify-content:space-between;
+    min-height:60px;padding:12px 13px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:13px;
+    cursor:pointer;text-align:left;
+    font:inherit;color:inherit;width:100%;
+    transition:background .18s,border-color .18s,box-shadow .18s,transform .18s;
+  }
+  .opt:hover{border-color:#cfd5d2}
+  .opt-title{font-size:12.5px;font-weight:700;letter-spacing:-0.01em}
+  .opt-desc{font-size:9.5px;color:var(--muted);margin-top:3px}
+  .price{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .was{font-size:9px;color:#9aa3a0;text-decoration:line-through}
+  .now{font-size:12.5px;font-weight:700;color:var(--green)}
+  .choose{font-size:11px;font-weight:700;color:var(--green)}
+  .check{
+    display:none;
+    width:16px;height:16px;border-radius:50%;
+    background:rgba(255,255,255,.22);
+    align-items:center;justify-content:center;
+    margin-top:2px;
+  }
+  .check svg{width:9px;height:9px}
+
+  .opt.selected{
+    background:var(--green);border-color:var(--green);
+    min-height:80px;
+    box-shadow:0 10px 26px rgba(8,68,58,.28);
+  }
+  .opt.selected .opt-title{color:#fff}
+  .opt.selected .opt-desc{color:rgba(255,255,255,.72)}
+  .opt.selected .was{color:#ff9c9c;text-decoration-color:#ff9c9c}
+  .opt.selected .now,.opt.selected .choose{color:#fff}
+  .opt.selected .check{display:flex}
+
+  /* actions */
+  .actions{margin-top:26px;display:flex;align-items:center;gap:10px}
+  .back{
+    width:38px;height:38px;border-radius:50%;
+    background:#fff;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink);
+  }
+  .back:hover{border-color:#cfd5d2}
+  .next{
+    height:38px;padding:0 32px;
+    border:none;border-radius:999px;
+    background:var(--green);color:#fff;
+    font:inherit;font-size:12.5px;font-weight:500;
+    display:inline-flex;align-items:center;gap:7px;
+    cursor:pointer;
+    box-shadow:0 12px 26px rgba(8,68,58,.22);
+    transition:background .15s;
+  }
+  .next:hover{background:var(--green-2)}
+
+  @media (max-width:680px){
+    .wrap{padding:24px 16px 60px}
+    .main{width:100%;padding-top:32px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs">
+      <a class="crumb" href="#">Home</a>
+      <span class="crumb-sep">/</span>
+      <a class="crumb" href="#">Get a quote</a>
+    </nav>
+
+    <main class="main">
+      <div class="stepper">
+        <div class="step done"><i class="dot"></i><span>Vehicle</span></div>
+        <div class="bar done"></div>
+        <div class="step current"><i class="dot"></i><span>Cover</span></div>
+        <div class="bar"></div>
+        <div class="step"><i class="dot"></i><span>About you</span></div>
+        <div class="bar"></div>
+        <div class="step"><i class="dot"></i><span>Address</span></div>
+        <div class="bar"></div>
+        <div class="step"><i class="dot"></i><span>Review</span></div>
+      </div>
+
+      <h1>How long do<br>you need cover?</h1>
+      <p class="sub">All prices include 10% off — cover from 1 hour up to one month.</p>
+
+      <div class="promo">
+        <span class="tag">10% off</span>
+        Introductory discount applied automatically
+      </div>
+
+      <div class="options" role="radiogroup">
+        <button class="opt" data-value="1h" role="radio">
+          <div>
+            <div class="opt-title">1 hour</div>
+            <div class="opt-desc">Quick cover for a short trip or errand</div>
+          </div>
+          <div class="price">
+            <span class="was">£2.95</span>
+            <span class="now">£2.66</span>
+            <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </button>
+
+        <button class="opt selected" data-value="1d" role="radio">
+          <div>
+            <div class="opt-title">1 day</div>
+            <div class="opt-desc">Same-day or overnight use</div>
+          </div>
+          <div class="price">
+            <span class="was">£19.99</span>
+            <span class="now">£17.99</span>
+            <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </button>
+
+        <button class="opt" data-value="1w" role="radio">
+          <div>
+            <div class="opt-title">1 week</div>
+            <div class="opt-desc">Flexible cover across several days</div>
+          </div>
+          <div class="price">
+            <span class="was">£99.99</span>
+            <span class="now">£89.99</span>
+            <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </button>
+
+        <button class="opt" data-value="custom" role="radio">
+          <div>
+            <div class="opt-title">Custom</div>
+            <div class="opt-desc">Set your own exact start and end (max one month)</div>
+          </div>
+          <div class="price">
+            <span class="choose">You choose</span>
+            <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.2l2 2L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </button>
+      </div>
+
+      <div class="actions">
+        <button class="back" aria-label="Back" onclick="history.back()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="next" id="next">
+          That's the one
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+<script>
+  const opts = document.querySelectorAll('.opt');
+  let selected = '1d';
+  opts.forEach(o => {
+    o.setAttribute('aria-checked', o.classList.contains('selected'));
+    o.addEventListener('click', () => {
+      opts.forEach(x => { x.classList.remove('selected'); x.setAttribute('aria-checked','false'); });
+      o.classList.add('selected');
+      o.setAttribute('aria-checked','true');
+      selected = o.dataset.value;
+    });
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    localStorage.setItem('q_cover', selected);
+    window.location.href = 'about-you.html';
+  });
+</script>
+</body>
+</html>

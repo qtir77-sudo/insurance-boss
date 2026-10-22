@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get a quote – About you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f7f5;
+    --ink:#0b1714;
+    --muted:#5f6b67;
+    --faint:#c9cfcd;
+    --line:#e3e6e4;
+    --green:#08443a;
+    --green-2:#0d5547;
+    --red:#c8282d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg)}
+  body{
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{
+    width:100%;
+    max-width:643px;
+    margin:0 auto;
+    padding:26px 0 80px;
+  }
+
+  /* breadcrumb */
+  .crumbs{display:flex;align-items:center;gap:8px}
+  .crumb{
+    display:inline-flex;align-items:center;
+    height:26px;padding:0 10px;
+    background:#fff;border:1px solid var(--line);
+    border-radius:999px;
+    font-size:9.5px;font-weight:600;color:var(--ink);
+    text-decoration:none;
+  }
+  .crumb-sep{font-size:10px;color:var(--faint)}
+
+  .main{
+    width:377px;
+    margin-left:auto;
+    padding-top:44px;
+  }
+
+  /* stepper */
+  .stepper{display:flex;align-items:flex-start;margin-bottom:28px}
+  .step{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .step .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:#dfe3e1;margin-top:3px;
+  }
+  .step.done .dot{background:var(--green)}
+  .step.current .dot{
+    width:12px;height:12px;margin-top:0;
+    background:var(--green);
+    box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px #cfd6d3;
+  }
+  .step span{font-size:8.5px;font-weight:500;color:#c3cac7;white-space:nowrap}
+  .step.done span{color:var(--ink)}
+  .step.current span{color:var(--ink);font-weight:600}
+  .bar{
+    height:1.5px;width:32px;background:#e3e6e4;
+    margin:5.5px 4px 0;flex:none;
+  }
+  .bar.done{background:var(--green)}
+
+  h1{
+    font-size:37px;line-height:1.02;
+    font-weight:800;letter-spacing:-0.045em;
+    color:var(--ink);
+  }
+  .sub{font-size:11.5px;color:#3f5a73;margin-top:4px}
+
+  /* form */
+  .req{
+    margin-top:28px;
+    font-size:9px;color:#6f7f8f;
+  }
+  .req b{color:var(--red);font-weight:500}
+  .field{
+    margin-top:2px;
+    width:100%;height:45px;
+    padding:0 13px;
+    font:inherit;font-size:12.5px;color:var(--ink);
+    background:#fff;
+    border:1.5px solid #cfd6d3;
+    border-radius:9px;
+    outline:none;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .field::placeholder{color:#9aa3a0}
+  .field:focus{
+    border-color:var(--green);
+    box-shadow:0 0 0 3px rgba(8,68,58,.12);
+  }
+  .field.error{
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(200,40,45,.10);
+  }
+  .err{
+    display:none;
+    margin-top:6px;
+    font-size:9.5px;color:var(--red);
+  }
+  .err.show{display:block}
+
+  /* actions */
+  .actions{margin-top:27px;display:flex;align-items:center;gap:10px}
+  .back{
+    width:38px;height:38px;border-radius:50%;
+    background:#fff;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink);
+  }
+  .back:hover{border-color:#cfd5d2}
+  .next{
+    height:38px;padding:0 32px;
+    border:none;border-radius:999px;
+    background:var(--green);color:#fff;
+    font:inherit;font-size:12.5px;font-weight:500;
+    display:inline-flex;align-items:center;gap:7px;
+    cursor:pointer;
+    box-shadow:0 12px 26px rgba(8,68,58,.22);
+    transition:background .15s;
+  }
+  .next:hover{background:var(--green-2)}
+
+  @media (max-width:680px){
+    .wrap{padding:24px 16px 60px}
+    .main{width:100%;padding-top:32px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="crumbs">
+      <a class="crumb" href="#">Home</a>
+      <span class="crumb-sep">/</span>
+      <a class="crumb" href="#">Get a quote</a>
+    </nav>
+
+    <main class="main">
+      <div class="stepper">
+        <div class="step done"><i class="dot"></i><span>Vehicle</span></div>
+        <div class="bar done"></div>
+        <div class="step done"><i class="dot"></i><span>Cover</span></div>
+        <div class="bar done"></div>
+        <div class="step current"><i class="dot"></i><span>About you</span></div>
+        <div class="bar"></div>
+        <div class="step"><i class="dot"></i><span>Address</span></div>
+        <div class="bar"></div>
+        <div class="step"><i class="dot"></i><span>Review</span></div>
+      </div>
+
+      <h1>What's your<br>full name?</h1>
+      <p class="sub">This must match your driving licence exactly.</p>
+
+      <form id="form" novalidate>
+        <p class="req">Fields marked <b>*</b> are required.</p>
+        <input class="field" id="fullname" name="fullname" type="text"
+               placeholder="e.g. Jane Smith" autocomplete="name" autofocus required>
+        <p class="err" id="err">Please enter your full name as shown on your licence.</p>
+
+        <div class="actions">
+          <button type="button" class="back" aria-label="Back" onclick="history.back()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="submit" class="next">
+            That's me
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2.5L10 6l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+<script>
+  const input = document.getElementById('fullname');
+  const err = document.getElementById('err');
+
+  input.addEventListener('input', () => {
+    input.classList.remove('error');
+    err.classList.remove('show');
+  });
+
+  document.getElementById('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = input.value.trim().replace(/\s+/g, ' ');
+    // cere cel putin prenume + nume
+    if (name.split(' ').length < 2) {
+      input.classList.add('error');
+      err.classList.add('show');
+      input.focus();
+      return;
+    }
+    localStorage.setItem('q_name', name);
+    window.location.href = 'date-of-birth.html';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About the car</title>
+<style>
+  :root { --bg:#f4f1ea; --card:#fff; --ink:#1d1d1b; --muted:#6b6a65; --line:#e3dfd5;
+          --plate:#f7d117; --blue:#1d4fd8; --ok:#1f8a4c; --bad:#c0392b; --warn:#c77d00; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:760px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  form { display:flex; gap:10px; flex-wrap:wrap; }
+  .plate { display:flex; align-items:stretch; border:2px solid #111; border-radius:8px; overflow:hidden; background:var(--plate); flex:1 1 260px; }
+  .plate .gb { background:var(--blue); color:#fff; font-weight:700; font-size:13px; display:flex; align-items:flex-end; padding:6px 8px; }
+  .plate input { border:0; background:transparent; font:700 30px/1 "Arial Black",Arial,sans-serif; letter-spacing:3px; text-transform:uppercase; padding:12px; width:100%; outline:none; }
+  button { border:0; border-radius:8px; background:var(--ink); color:#fff; font-weight:700; font-size:16px; padding:0 26px; min-height:58px; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .msg { margin-top:16px; padding:12px 14px; border-radius:8px; background:#fff3cd; }
+  .msg.err { background:#fde2e0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-top:20px; }
+  .title { font-size:22px; font-weight:800; margin:0; }
+  .title small { display:block; font-size:14px; font-weight:400; color:var(--muted); margin-top:4px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:16px; }
+  .f { background:#faf8f3; border-radius:8px; padding:10px 12px; }
+  .f b { display:block; font-size:12px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.04em; }
+  .f span { font-weight:700; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .badge { padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; color:#fff; }
+  .g { background:var(--ok); } .r { background:var(--bad); } .y { background:var(--warn); }
+  h2 { font-size:18px; margin:0 0 8px; }
+  .test { border-top:1px solid var(--line); padding:12px 0; }
+  .test:first-of-type { border-top:0; }
+  .test-head { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-weight:700; }
+  .test ul { margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:14px; }
+  .gov { display:inline-block; background:#00703c; color:#fff; font-weight:700; text-decoration:none; padding:12px 16px; border-radius:8px; }
+  .gov:hover { background:#005a30; }
+  .pass { color:var(--ok); } .fail { color:var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>About the car</h1>
+  <p class="sub" style="color:#1d1d1b;font-weight:600">Please enter the registration number</p>
+
+  <form id="f">
+    <label class="plate"><span class="gb">UK</span><input id="reg" placeholder="KF69KCV" maxlength="10" autocomplete="off" required></label>
+    <button id="btn">Search</button>
+  </form>
+
+  <div id="out"></div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDate = (s) => { if (!s) return "–"; const d = new Date(s); return isNaN(d) ? s : d.toLocaleDateString("en-GB"); };
+const cap = (s) => s ? String(s).charAt(0) + String(s).slice(1).toLowerCase() : "–";
+
+$("#f").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const reg = $("#reg").value.trim();
+  if (!reg) return;
+  $("#btn").disabled = true; $("#btn").textContent = "Searching...";
+  $("#out").innerHTML = "";
+  try {
+    const r = await fetch("/api/lookup?reg=" + encodeURIComponent(reg));
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Eroare");
+    render(data);
+  } catch (err) {
+    $("#out").innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+  } finally {
+    $("#btn").disabled = false; $("#btn").textContent = "Search";
+  }
+});
+
+function govLinks(reg) {
+  return `<div class="card">
+    <h2>Check ${esc(reg)} on the official sites (free, unlimited)</h2>
+    <p class="sub" style="margin:0 0 12px">The number is already copied. On the site press Ctrl+V in the box, then Enter.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="gov" href="https://www.check-mot.service.gov.uk/" target="_blank" rel="noopener">MOT history + model + mileage</a>
+      <a class="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank" rel="noopener">Tax + DVLA details</a>
+    </div>
+  </div>`;
+}
+
+function render(d) {
+  try { navigator.clipboard.writeText(d.registration); } catch (e) {}
+  if (d.noKeys) {
+    $("#out").innerHTML = `<div class="card">
+      <h2>Last step: connect the app (one time only)</h2>
+      <ol style="margin:8px 0 14px;padding-left:20px;line-height:1.7">
+        <li>Create a free account (no card): <a href="https://console.apify.com/sign-up" target="_blank" rel="noopener">console.apify.com/sign-up</a></li>
+        <li>Open <a href="https://console.apify.com/settings/integrations" target="_blank" rel="noopener">Settings → API &amp; Integrations</a> and copy your <b>Personal API token</b></li>
+        <li>Paste it here and click Save</li>
+      </ol>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input id="tok" placeholder="apify_api_..." style="flex:1 1 260px;padding:14px;border:2px solid var(--line);border-radius:8px;font-size:15px">
+        <button id="save" type="button">Save</button>
+      </div>
+      <div id="setupMsg"></div>
+    </div>`;
+    $("#save").onclick = async () => {
+      $("#save").disabled = true;
+      try {
+        const r = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: $("#tok").value }) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "Eroare");
+        $("#setupMsg").innerHTML = `<div class="msg">Done! Searching for the car now...</div>`;
+        $("#f").requestSubmit();
+      } catch (err) {
+        $("#setupMsg").innerHTML = `<div class="msg err">${esc(err.message)}</div>`;
+        $("#save").disabled = false;
+      }
+    };
+    return;
+  }
+  const v = d.dvla || {}, m = d.mot || {}, rc = d.regcheck || {};
+  const tv = (o) => (o && typeof o === "object") ? (o.CurrentTextValue ?? "") : (o ?? "");
+  const make = v.make || m.make || tv(rc.CarMake) || rc.MakeDescription || "";
+  const model = m.model || tv(rc.CarModel) || rc.ModelDescription || "";
+  const year = v.yearOfManufacture || (m.manufactureDate || m.firstUsedDate || "").slice(0, 4) || rc.RegistrationYear || "";
+  if (!v.fuelType && !m.fuelType && rc.FuelType) v.fuelType = tv(rc.FuelType);
+  if (!v.engineCapacity && !m.engineSize && rc.EngineSize) v.engineCapacity = String(tv(rc.EngineSize)).replace(/\s*cc$/i, "");
+  if (!v.colour && !m.primaryColour && rc.Colour) v.colour = tv(rc.Colour);
+  const fields = [
+    ["Variant", rc.Description], ["Make", make], ["Model", model], ["Year", year],
+    ["Body", tv(rc.BodyStyle)], ["Gearbox", tv(rc.Transmission)], ["Seats", tv(rc.NumberOfSeats)],
+    ["Doors", tv(rc.NumberOfDoors)], ["VIN", rc.VechileIdentificationNumber],
+    ["First registered", v.monthOfFirstRegistration || fmtDate(m.firstUsedDate || m.registrationDate)],
+    ["Fuel", cap(v.fuelType || m.fuelType)], ["Engine", (v.engineCapacity || m.engineSize) ? (v.engineCapacity || m.engineSize) + " cc" : "–"],
+    ["Colour", cap(v.colour || m.primaryColour)], ["CO₂", v.co2Emissions ? v.co2Emissions + " g/km" : "–"],
+    ["Euro status", v.euroStatus], ["Last V5C", fmtDate(v.dateOfLastV5CIssued)],
+  ].filter(([, val]) => val && val !== "–");
+
+  const badges = [];
+  if (v.taxStatus) badges.push([`Tax: ${v.taxStatus}${v.taxDueDate ? " until " + fmtDate(v.taxDueDate) : ""}`, v.taxStatus === "Taxed" ? "g" : "r"]);
+  if (v.motStatus) badges.push([`MOT: ${v.motStatus}${v.motExpiryDate ? " until " + fmtDate(v.motExpiryDate) : ""}`, v.motStatus === "Valid" ? "g" : "r"]);
+  if (!v.motStatus && m.latestExpiryDate) {
+    const ok = new Date(m.latestExpiryDate) >= new Date();
+    badges.push([`MOT: ${ok ? "Valid" : "Expired"} until ${fmtDate(m.latestExpiryDate)}`, ok ? "g" : "r"]);
+  }
+  if (m.latestMileage) badges.push([`Last mileage: ${Number(m.latestMileage).toLocaleString("en-GB")} miles`, "g"]);
+  if (m.mileageAnomaly) badges.push(["Warning: mileage anomaly", "y"]);
+  if (m.hasOutstandingRecall && m.hasOutstandingRecall !== "No" && m.hasOutstandingRecall !== "Unavailable") badges.push(["Outstanding recall", "y"]);
+  if (v.markedForExport) badges.push(["Marked for export", "y"]);
+
+  const tests = (m.motTests || []).slice().sort((a, b) => new Date(b.completedDate) - new Date(a.completedDate));
+
+  let html = "";
+  if (d.demo) html += `<div class="msg">Demo mode: the data below is sample data. Add your API keys in the .env file to see real data.</div>`;
+  if (d.errors && d.errors.length) html += `<div class="msg err">${d.errors.map(esc).join("<br>")}</div>`;
+
+  html += `<div class="card">
+    <p class="title">${esc(d.registration)} · ${esc(make)} ${esc(model)}<small>${esc(year)} · ${esc(cap(v.fuelType || m.fuelType))}</small></p>
+    <div class="badges">${badges.map(([t, c]) => `<span class="badge ${c}">${esc(t)}</span>`).join("")}</div>
+    <div class="grid">${fields.map(([k, val]) => `<div class="f"><b>${esc(k)}</b><span>${esc(val)}</span></div>`).join("")}</div>
+  </div>`;
+
+  if (tests.length) {
+    html += `<div class="card"><h2>MOT history (${tests.length} tests)</h2>` + tests.map(t => `
+      <div class="test">
+        <div class="test-head">
+          <span>${fmtDate(t.completedDate)} · <span class="${t.testResult === "PASSED" ? "pass" : "fail"}">${t.testResult === "PASSED" ? "Passed" : "Failed"}</span></span>
+          <span>${t.odometerValue ? Number(t.odometerValue).toLocaleString("en-GB") + " " + (t.odometerUnit === "KM" ? "km" : "miles") : ""}</span>
+        </div>
+        ${(t.defects || []).length ? `<ul>${t.defects.map(df => `<li><b>${esc(df.type)}</b>${df.dangerous ? " (dangerous)" : ""}: ${esc(df.text)}</li>`).join("")}</ul>` : ""}
+      </div>`).join("") + `</div>`;
+  }
+  try {
+    localStorage.setItem("q_reg", d.registration || "");
+    localStorage.setItem("q_vehicle", [make, model, year].filter(Boolean).join(" "));
+    localStorage.setItem("q_make", make || "");
+    localStorage.setItem("q_model", model || "");
+    localStorage.setItem("q_year", year || "");
+    localStorage.setItem("q_vin", (rc && rc.VechileIdentificationNumber) || "");
+    localStorage.setItem("q_colour", cap(v.colour || m.primaryColour) || "");
+  } catch (e) {}
+  try { localStorage.removeItem("q_photo"); } catch (e) {}
+  html += `<div class="card">`
+    + `<h2>Add a photo of the front of the car <span style="font-weight:400;color:#6b6a65">(optional)</span></h2>`
+    + `<p class="sub" style="margin:0 0 12px">Take or choose a clear photo of the front of the vehicle.</p>`
+    + `<label for="carPhoto" style="display:inline-flex;align-items:center;gap:8px;background:#08443a;color:#fff;font-weight:700;padding:13px 22px;border-radius:999px;cursor:pointer;font-size:15px">\uD83D\uDCF7 Take a photo</label>`
+    + `<input type="file" accept="image/*" capture="environment" id="carPhoto" style="position:absolute;width:1px;height:1px;opacity:0">`
+    + `<div id="photoPreview"></div></div>`;
+  html += `<div class="card" style="text-align:center">`
+    + `<a href="cover.html" style="display:inline-block;background:#1f8a4c;color:#fff;font-weight:700;text-decoration:none;padding:15px 30px;border-radius:999px;font-size:17px">Continue to quote →</a>`
+    + `<p class="sub" style="margin:10px 0 0">Continue with the quote steps.</p></div>`;
+  $("#out").innerHTML = html;
+
+  const pin = document.getElementById("carPhoto");
+  if (pin) pin.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1200;
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+        else if (h > max) { w = Math.round(w * max / h); h = max; }
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        const data = cv.toDataURL("image/jpeg", 0.7);
+        try { localStorage.setItem("q_photo", data); } catch (err) {}
+        document.getElementById("photoPreview").innerHTML =
+          '<img src="' + data + '" style="max-width:100%;border-radius:10px;margin-top:12px;border:1px solid var(--line)">';
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+</body>
+</html>
