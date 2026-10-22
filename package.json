@@ -1,0 +1,14 @@
+{
+  "name": "car-lookup",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Car lookup + short-term cover quote flow",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16",
+    "pdfkit": "^0.15.0"
+  }
+}
