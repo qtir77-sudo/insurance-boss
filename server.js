@@ -53,8 +53,11 @@ const PAY_LINKS = {
   "custom": process.env.PAY_LINK_CUSTOM || "",
 };
 const EXCESS = process.env.EXCESS || "£250";
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const APP_URL = (process.env.APP_URL || "").replace(/\/$/, "");
+const LOGO_SRC = APP_URL ? (APP_URL + "/logo.png") : "cid:brandlogo";
 const smtpConfigured = !!(SMTP_HOST && SMTP_USER && SMTP_PASS);
-const hasEmail = smtpConfigured && !!nodemailer;
+const hasEmail = !!RESEND_API_KEY || (smtpConfigured && !!nodemailer);
 
 let mailer = null;
 if (hasEmail) {
@@ -98,7 +101,7 @@ function dataUrlToBuffer(dataUrl){
 function policyHtml(d, pn){
   const row = (k, v) => `<tr><td style="padding:7px 0;color:#5f6b67;font-size:14px">${escH(k)}</td><td style="padding:7px 0;font-weight:700;text-align:right;font-size:14px">${escH(v) || "-"}</td></tr>`;
   return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#0b1714">
-    <img src="cid:brandlogo" alt="${escH(SENDER_NAME)}" style="max-width:200px;height:auto;display:block;margin:0 0 14px auto">
+    <img src="${LOGO_SRC}" alt="${escH(SENDER_NAME)}" style="max-width:200px;height:auto;display:block;margin:0 0 14px auto">
     <h2 style="color:#08443a;margin:0 0 6px">Your policy confirmation</h2>
     <p style="font-size:14px">Thanks ${escH(d.name)}, your cover is confirmed. Your policy number is <b>${escH(pn)}</b>.</p>
     <div style="background:#08443a;color:#fff;border-radius:12px;padding:16px;margin:14px 0">
@@ -246,6 +249,27 @@ async function sendPolicyEmail(to, d){
       const cert = await buildCertificatePdf(dd, pn);
       attachments.push({ filename: `certificate-${pn}.pdf`, content: cert, contentType: "application/pdf" });
     } catch (e) { /* certificatul e optional */ }
+  }
+  if (RESEND_API_KEY) {
+    // Trimitere prin Resend (HTTP API - merge si de pe Render)
+    const resendAtt = attachments
+      .filter(a => a.filename && a.filename.endsWith(".pdf"))
+      .map(a => ({ filename: a.filename, content: a.content.toString("base64") }));
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        to: [to],
+        subject: `Your ${SENDER_NAME} policy ${pn}`,
+        html: policyHtml(dd, pn),
+        attachments: resendAtt,
+      }),
+    });
+    const text = await r.text();
+    if (!r.ok) { let m = text; try { m = JSON.parse(text).message || text; } catch(e){} throw new Error("Resend: " + String(m).slice(0,200)); }
+    console.log("Polita trimisa OK (Resend):", pn);
+    return pn;
   }
   await mailer.sendMail({
     from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
@@ -406,6 +430,11 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({ ok: true }));
   }
 
+  if (url.pathname === "/logo.png") {
+    if (LOGO_BUFFER) { res.setHeader("Content-Type", "image/png"); return res.end(LOGO_BUFFER); }
+    res.writeHead(404); return res.end("no logo");
+  }
+
   if (url.pathname === "/api/paylinks") {
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     return res.end(JSON.stringify(PAY_LINKS));
@@ -422,7 +451,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(400);
       return res.end(JSON.stringify({ error: "Invalid email address" }));
     }
-    if (smtpConfigured && !nodemailer) {
+    if (!RESEND_API_KEY && smtpConfigured && !nodemailer) {
       res.writeHead(500);
       return res.end(JSON.stringify({ error: "Email library not installed. Run: npm install" }));
     }
